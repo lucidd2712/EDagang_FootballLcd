@@ -8,5 +8,6 @@ def show_home(request):
         'app_name': 'EDagang Football Lucid',
         'student_name': 'Gilang Adjie Saputra',
         'student_class': 'PBP C',
+        'products': products, 
     }
     return render(request, "home.html", context)
