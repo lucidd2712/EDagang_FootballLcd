@@ -1,12 +1,9 @@
 from django.db import models
 
 class Product(models.Model):
-    name = models.CharField(max_length=100)  # Nama item
-    price = models.IntegerField()            # Harga item
-    description = models.TextField()         # Deskripsi item
-    thumbnail = models.URLField()            # URL gambar item
-    category = models.CharField(max_length=50)  # Kategori item
-    is_featured = models.BooleanField(default=False)  # Status unggulan
-
-    def __str__(self):
-        return self.name
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+    stock = models.IntegerField()
+    description = models.TextField()
+    image_url = models.URLField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
