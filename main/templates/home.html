@@ -1,6 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Daftar Produk Toko Bola</h1>
+
+<h1>EDagang Football L</h1>
+
+<h5>NPM: </h5>
+<p>{{ npm }}</p>
+
+<h5>Name:</h5>
+<p>{{ name }}</p>
+
+<h5>Class:</h5>
+<p>{{ class }}</p>
+
+
+<h3>Daftar Produk EDagang Football L</h3>
 <a href="{% url 'main:create_product' %}">
   <button>+ Tambah Produk</button>
 </a>

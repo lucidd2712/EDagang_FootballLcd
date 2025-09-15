@@ -7,6 +7,9 @@ from django.core import serializers
 def show_main(request):
     products = Product.objects.all()
     context = {
+        'npm' : '2406399655',
+        'name': 'Gilang Adjie Saputra',
+        'class': 'PBP C',
         'products': products,
     }
     return render(request, "home.html", context)
