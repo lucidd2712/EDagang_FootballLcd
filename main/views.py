@@ -25,7 +25,7 @@ def create_product(request):
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
     context = {'product': product}
-    return render(request, "product_detail.html", context)
+    return render(request, "show_product.html", context)
 
 # Data Delivery Views
 def show_xml(request):
