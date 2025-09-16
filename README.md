@@ -67,18 +67,6 @@ Semua asisten dosen sangat baik dalam memberikan bimbingan. Meskipun pertemuan d
 
 # Dokumentasi Tugas 3
 
-## Hasil Data Delivery
-
-### JSON
-![Show JSON](gambargithutugas3/showjson.png)
-
-### JSON by ID
-![Show JSON by ID](gambargithutugas3/showjsonbyid.png)
-
-### XML
-![Show XML](gambargithutugas3/showxml.png)
-
-### XML by ID
-![Show XML by ID](gambargithutugas3/showxmlbyid.png)
+https://www.canva.com/design/DAGzJ7Jg1As/3r8d0ElLRKQPejgKpOaaYw/edit?utm_content=DAGzJ7Jg1As&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
 
 
