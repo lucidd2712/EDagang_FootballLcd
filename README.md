@@ -65,5 +65,20 @@ Dalam mengimplementasikan checklist tersebut, langkah pertama yang saya lakukan 
 Semua asisten dosen sangat baik dalam memberikan bimbingan. Meskipun pertemuan dilakukan secara online, mereka tetap merespons dengan baik setiap pertanyaan yang diajukan. Selain itu, mereka juga membantu saya ketika mengalami kesulitan dan memberikan arahan dalam memecahkan masalah, sehingga saya dapat menyelesaikan tutorial dengan baik serta memahami cara mengimplementasikannya.
 
 
+# Dokumentasi Tugas 3
+
+## Hasil Data Delivery
+
+### JSON
+![Show JSON](gambargithutugas3/showjson.png)
+
+### JSON by ID
+![Show JSON by ID](gambargithutugas3/showjsonbyid.png)
+
+### XML
+![Show XML](gambargithutugas3/showxml.png)
+
+### XML by ID
+![Show XML by ID](gambargithutugas3/showxmlbyid.png)
 
 
