@@ -34,6 +34,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "gilang-adjie-edagangfootballlucid.pbp.cs.ui.ac.id"]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://gilang-adjie-edagangfootballlucid.pbp.cs.ui.ac.id',
+]
 
 # Application definition
 
