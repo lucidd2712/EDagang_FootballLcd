@@ -14,10 +14,26 @@
 
 
 <h3>Daftar Produk EDagang Football L</h3>
+
 <a href="{% url 'main:create_product' %}">
   <button>+ Tambah Produk</button>
 </a>
+
+<a href="{% url 'main:logout' %}">
+  <button>Logout</button>
+</a>
+
+<h5>Sesi terakhir login: {{ last_login }}</h5>
+
+
 <hr>
+<a href="?filter=all">
+    <button type="button">All Articles</button>
+</a>
+<a href="?filter=my">
+    <button type="button">My Articles</button>
+</a> 
+
 {% if not products %}
 <p>Belum ada produk di toko bola.</p>
 {% else %}
