@@ -5,6 +5,12 @@ app_name = 'main'
 
 urlpatterns = [
     path('', show_main, name='show_main'),
+
+      # kategori (pakai show_main dengan default kwargs)
+    path('apparel/', show_main, {'category': 'apparel'}, name='apparel'),
+    path('accessories/', show_main, {'category': 'accessories'}, name='accessories'),
+    path('shoes/', show_main, {'category': 'shoes'}, name='shoes'),
+    
     path('create-product/', create_product, name='create_product'),
     path('product/<int:id>/', show_product, name='show_product'),
     path('xml/', show_xml, name='show_xml'),
