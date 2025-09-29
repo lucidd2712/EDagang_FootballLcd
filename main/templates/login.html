@@ -1,16 +1,35 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Login - Football Shop</title>
+<title>Login - ShopBall Lucid</title>
 {% endblock meta %}
 
 {% block content %}
-<div class="bg-gray-50 w-full min-h-screen flex items-center justify-center p-8">
-  <div class="max-w-md w-full">
-    <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 form-style">
+<div class="relative w-full min-h-screen flex items-center justify-center p-6 md:p-8
+            bg-gradient-to-br from-blue-50 via-white to-blue-100 overflow-hidden">
+
+  <!-- Dekor sepakbola kiri-atas -->
+  <svg class="pointer-events-none absolute -top-16 -left-16 w-72 h-72 opacity-20"
+       viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="48" cy="48" r="44" fill="#ebf2ff" stroke="#93c5fd" stroke-width="2"/>
+    <path d="M48 26l10 6-2 11-8 5-8-5-2-11 10-6z" fill="#93c5fd" stroke="#60a5fa"/>
+    <path d="M48 26l-10 6-11-2M48 26l10 6 11-2M48 26l-2 11-9 8M48 26l2 11 9 8M48 48l-8 5-3 11M48 48l8 5 3 11"
+          stroke="#60a5fa" stroke-linecap="round" fill="none"/>
+  </svg>
+
+  <!-- Dekor garis lapangan kanan-bawah -->
+  <svg class="pointer-events-none absolute -bottom-24 -right-24 w-[28rem] h-[28rem] opacity-15"
+       viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 80h110M5 60h110M5 40h110M20 5v110M40 5v110M60 5v110M80 5v110M100 5v110"
+          stroke="#bfdbfe" stroke-width="2"/>
+    <circle cx="60" cy="60" r="18" fill="none" stroke="#93c5fd" stroke-width="2"/>
+  </svg>
+
+  <div class="max-w-md w-full relative z-10">
+    <div class="bg-white rounded-lg border border-gray-200 ring-1 ring-blue-100 shadow-lg p-6 sm:p-8 form-style">
       <div class="text-center mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Sign In</h1>
-        <p class="text-gray-600">Welcome back to Football Shop</p>
+        <p class="text-gray-600">Welcome back to ShopBall Lucid</p>
       </div>
 
       <!-- Form Errors Display -->
@@ -40,32 +59,22 @@
 
       <form method="POST" action="" class="space-y-6">
         {% csrf_token %}
-        
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition-colors" 
-            placeholder="Enter your username">
+          <input id="username" name="username" type="text" required
+                 class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition-colors"
+                 placeholder="Enter your username">
         </div>
 
         <div>
           <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input 
-            id="password" 
-            name="password" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition-colors" 
-            placeholder="Enter your password">
+          <input id="password" name="password" type="password" required
+                 class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition-colors"
+                 placeholder="Enter your password">
         </div>
 
-        <button 
-          type="submit" 
-          class="w-full bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 transition-colors">
+        <button type="submit"
+                class="w-full bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 transition-colors">
           Sign In
         </button>
       </form>
@@ -74,17 +83,10 @@
       {% if messages %}
         <div class="mt-6">
           {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded-md text-sm border
-                {% if message.tags == 'success' %}
-                  bg-blue-50 border-blue-200 text-blue-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
+            <div class="px-4 py-3 rounded-md text-sm border
+                        {% if message.tags == 'success' %} bg-blue-50 border-blue-200 text-blue-700
+                        {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-700
+                        {% else %} bg-gray-50 border-gray-200 text-gray-700 {% endif %}">
               {{ message }}
             </div>
           {% endfor %}
@@ -93,10 +95,8 @@
 
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-gray-500 text-sm">
-          Don't have an account? 
-          <a href="{% url 'main:register' %}" class="text-blue-500 hover:text-blue-600 font-medium">
-            Register Now
-          </a>
+          Don't have an account?
+          <a href="{% url 'main:register' %}" class="text-blue-500 hover:text-blue-600 font-medium">Register Now</a>
         </p>
       </div>
     </div>

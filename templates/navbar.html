@@ -1,22 +1,26 @@
 <nav class="fixed top-0 left-0 w-full bg-blue-200 border-b border-blue-300 shadow-sm z-50">
   <div class="max-w-7xl mx-auto px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
-      
+
       <!-- Logo -->
       <div class="flex items-center">
         <h1 class="text-xl font-semibold text-blue-900">
-          Football <span class="text-blue-600">Shop</span>
+          ShopBall <span class="text-blue-600">Lucid</span>
         </h1>
       </div>
-      
+
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center space-x-8">
-        <a href="{% url 'main:show_main' %}" class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Home</a>
-        <a href="{% url 'main:apparel' %}" class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Apparel</a>
-        <a href="{% url 'main:accessories' %}" class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Accessories</a>
-        <a href="{% url 'main:shoes' %}" class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Shoes</a>
+        <a href="{% url 'main:show_main' %}"
+           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Home</a>
+        <a href="{% url 'main:apparel' %}"
+           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Apparel</a>
+        <a href="{% url 'main:accessories' %}"
+           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Accessories</a>
+        <a href="{% url 'main:shoes' %}"
+           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Shoes</a>
       </div>
-      
+
       <!-- Desktop User Section -->
       <div class="hidden md:flex items-center space-x-6">
         {% if user.is_authenticated %}
@@ -24,6 +28,10 @@
             <div class="text-sm font-medium text-blue-900">{{ name|default:user.username }}</div>
             <div class="text-xs text-blue-700">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
           </div>
+          <a href="{% url 'main:create_product' %}"
+             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors">
+            Add Product
+          </a>
           <a href="{% url 'main:logout' %}" class="text-red-600 hover:text-red-700 font-medium transition-colors">
             Logout
           </a>
@@ -32,7 +40,7 @@
           <a href="{% url 'main:register' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-medium transition-colors">Register</a>
         {% endif %}
       </div>
-      
+
       <!-- Mobile Menu Button -->
       <div class="md:hidden flex items-center">
         <button class="mobile-menu-button p-2 text-blue-900 hover:text-blue-700 transition-colors">
@@ -50,7 +58,7 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu hidden md:hidden bg-blue-200 border-t border-blue-300">
     <div class="px-6 py-4 space-y-4">
-      
+
       <!-- Mobile Navigation Links -->
       <div class="space-y-1">
         <a href="{% url 'main:show_main' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Home</a>
@@ -66,7 +74,14 @@
             <div class="font-medium text-blue-900">{{ name|default:user.username }}</div>
             <div class="text-sm text-blue-700">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
           </div>
-          <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors">Logout</a>
+          <div class="space-y-3">
+            <a href="{% url 'main:create_product' %}" class="block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded text-center transition-colors">
+              Add Product
+            </a>
+            <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors text-center">
+              Logout
+            </a>
+          </div>
         {% else %}
           <div class="space-y-3">
             <a href="{% url 'main:login' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Login</a>
@@ -80,9 +95,6 @@
   <script>
     const btn = document.querySelector("button.mobile-menu-button");
     const menu = document.querySelector(".mobile-menu");
-
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
-    });
+    btn?.addEventListener("click", () => menu?.classList.toggle("hidden"));
   </script>
 </nav>

@@ -37,7 +37,7 @@ def show_main(request, category=None):
     }
     return render(request, "home.html", context)
 
-
+@login_required(login_url='/login')
 def create_product(request):
     form = ProductForm(request.POST or None)
     if form.is_valid() and request.method == "POST":
