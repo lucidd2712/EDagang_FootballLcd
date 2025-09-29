@@ -13,22 +13,31 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 @login_required(login_url='/login')
-def show_main(request):
-    filter_type = request.GET.get("filter", "all")  # default 'all'
+def show_main(request, category=None):
+    filter_type = request.GET.get("filter", "all")  # 'all' atau 'my'
+    # category bisa datang dari kwargs (opsi B) atau query string (opsi A)
+    category = category or request.GET.get("category")
 
     if filter_type == "all":
         products = Product.objects.all()
     else:
         products = Product.objects.filter(user=request.user)
 
+    # (opsional) kalau kamu sudah punya field kategori di Product, filter di sini
+    # if category in ["apparel", "accessories", "shoes"]:
+    #     products = products.filter(category=category)
+
     context = {
         'npm': '2406399655',
-        'name': request.user.username,  # lebih baik ambil dari user login
+        'name': request.user.username,
         'class': 'PBP C',
         'products': products,
-        'last_login': request.COOKIES.get('last_login', 'Never')
+        'last_login': request.COOKIES.get('last_login', 'Never'),
+        'filter_type': filter_type,
+        'active_category': category,  # bisa dipakai buat highlight tab
     }
     return render(request, "home.html", context)
+
 
 def create_product(request):
     form = ProductForm(request.POST or None)
