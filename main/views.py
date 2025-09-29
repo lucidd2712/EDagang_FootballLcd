@@ -14,8 +14,7 @@ from django.urls import reverse
 
 @login_required(login_url='/login')
 def show_main(request, category=None):
-    filter_type = request.GET.get("filter", "all")  # 'all' atau 'my'
-    # category bisa datang dari kwargs (opsi B) atau query string (opsi A)
+    filter_type = request.GET.get("filter", "all")
     category = category or request.GET.get("category")
 
     if filter_type == "all":
@@ -23,7 +22,7 @@ def show_main(request, category=None):
     else:
         products = Product.objects.filter(user=request.user)
 
-    # (opsional) kalau kamu sudah punya field kategori di Product, filter di sini
+    # (opsional) aktifkan filter kategori kalau sudah siap
     # if category in ["apparel", "accessories", "shoes"]:
     #     products = products.filter(category=category)
 
@@ -34,7 +33,7 @@ def show_main(request, category=None):
         'products': products,
         'last_login': request.COOKIES.get('last_login', 'Never'),
         'filter_type': filter_type,
-        'active_category': category,  # bisa dipakai buat highlight tab
+        'active_category': category,
     }
     return render(request, "home.html", context)
 

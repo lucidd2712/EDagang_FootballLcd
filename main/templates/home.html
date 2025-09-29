@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-<title>Football News</title>
+<title>Football Products</title>
 {% endblock meta %}
 
 {% block content %}
@@ -12,18 +12,18 @@
 
     <!-- Header Section -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Football News</h1>
-      <p class="text-gray-600">Stay updated with the latest football stories and analysis</p>
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Football Products</h1>
+      <p class="text-gray-600">Discover the newest football gear and accessories</p>
     </div>
 
     <!-- Filter Section -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-blue-100 p-4">
       <div class="flex space-x-3 mb-4 sm:mb-0">
         <a href="?" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-blue-600 text-white{% else %}bg-white text-blue-700 border border-blue-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-600 hover:text-white">
-          All News
+          All Products
         </a>
         <a href="?filter=my" class="{% if request.GET.filter == 'my' %} bg-blue-600 text-white{% else %}bg-white text-blue-700 border border-blue-300{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-600 hover:text-white">
-          My News
+          My Products
         </a>
       </div>
       {% if user.is_authenticated %}
@@ -33,22 +33,22 @@
       {% endif %}
     </div>
 
-    <!-- News Grid -->
-    {% if not news_list %}
+    <!-- Products Grid -->
+    {% if not products %}
       <div class="bg-white rounded-lg border border-blue-100 p-12 text-center">
         <div class="w-32 h-32 mx-auto mb-4">
-          <img src="{% static 'image/no-news.png' %}" alt="No news available" class="w-full h-full object-contain">
+          <img src="{% static 'image/no-news.png' %}" alt="No products" class="w-full h-full object-contain">
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No news found</h3>
-        <p class="text-gray-500 mb-6">Be the first to share football news with the community.</p>
-        <a href="{% url 'main:create_news' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          Create News
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+        <p class="text-gray-500 mb-6">Be the first to add your product.</p>
+        <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+          Add Product
         </a>
       </div>
     {% else %}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for news in news_list %}
-          {% include 'card_news.html' with news=news %}
+        {% for product in products %}
+          {% include 'card_product.html' with product=product %}
         {% endfor %}
       </div>
     {% endif %}
