@@ -11,14 +11,30 @@
 
       <!-- Desktop Navigation -->
       <div class="hidden md:flex items-center space-x-8">
+        <!-- Semua link diberi data-category untuk dipakai AJAX -->
         <a href="{% url 'main:show_main' %}"
-           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Home</a>
+           data-category=""
+           class="nb-link text-blue-900 hover:text-blue-700 transition-colors">
+          Home
+        </a>
+
         <a href="{% url 'main:apparel' %}"
-           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Apparel</a>
+           data-category="apparel"
+           class="nb-link text-blue-900 hover:text-blue-700 transition-colors">
+          Apparel
+        </a>
+
         <a href="{% url 'main:accessories' %}"
-           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Accessories</a>
+           data-category="accessories"
+           class="nb-link text-blue-900 hover:text-blue-700 transition-colors">
+          Accessories
+        </a>
+
         <a href="{% url 'main:shoes' %}"
-           class="text-blue-900 hover:text-blue-700 font-medium transition-colors">Shoes</a>
+           data-category="shoes"
+           class="nb-link text-blue-900 hover:text-blue-700 transition-colors">
+          Shoes
+        </a>
       </div>
 
       <!-- Desktop User Section -->
@@ -43,8 +59,7 @@
 
       <!-- Mobile Menu Button -->
       <div class="md:hidden flex items-center">
-        <button class="mobile-menu-button p-2 text-blue-900 hover:text-blue-700 transition-colors">
-          <span class="sr-only">Open menu</span>
+        <button class="mobile-menu-button p-2 text-blue-900 hover:text-blue-700 transition-colors" aria-label="Open menu">
           <div class="w-6 h-6 flex flex-col justify-center items-center">
             <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm"></span>
             <span class="bg-current block transition-all duration-300 ease-out h-0.5 w-6 rounded-sm my-0.5"></span>
@@ -58,16 +73,11 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu hidden md:hidden bg-blue-200 border-t border-blue-300">
     <div class="px-6 py-4 space-y-4">
+      <a href="{% url 'main:show_main' %}" data-category="" class="nb-link block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Home</a>
+      <a href="{% url 'main:apparel' %}" data-category="apparel" class="nb-link block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Apparel</a>
+      <a href="{% url 'main:accessories' %}" data-category="accessories" class="nb-link block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Accessories</a>
+      <a href="{% url 'main:shoes' %}" data-category="shoes" class="nb-link block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Shoes</a>
 
-      <!-- Mobile Navigation Links -->
-      <div class="space-y-1">
-        <a href="{% url 'main:show_main' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Home</a>
-        <a href="{% url 'main:apparel' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Apparel</a>
-        <a href="{% url 'main:accessories' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Accessories</a>
-        <a href="{% url 'main:shoes' %}" class="block text-blue-900 hover:text-blue-700 font-medium py-3 transition-colors">Shoes</a>
-      </div>
-
-      <!-- Mobile User Section -->
       <div class="border-t border-blue-300 pt-4">
         {% if user.is_authenticated %}
           <div class="mb-4">
@@ -75,12 +85,8 @@
             <div class="text-sm text-blue-700">{{ npm|default:"Student" }} - {{ class|default:"Class" }}</div>
           </div>
           <div class="space-y-3">
-            <a href="{% url 'main:create_product' %}" class="block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded text-center transition-colors">
-              Add Product
-            </a>
-            <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors text-center">
-              Logout
-            </a>
+            <a href="{% url 'main:create_product' %}" class="block bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded text-center transition-colors">Add Product</a>
+            <a href="{% url 'main:logout' %}" class="block text-red-600 hover:text-red-700 font-medium py-3 transition-colors text-center">Logout</a>
           </div>
         {% else %}
           <div class="space-y-3">
@@ -93,8 +99,76 @@
   </div>
 
   <script>
-    const btn = document.querySelector("button.mobile-menu-button");
-    const menu = document.querySelector(".mobile-menu");
-    btn?.addEventListener("click", () => menu?.classList.toggle("hidden"));
+    // Toggle mobile menu
+    (function(){
+      const btn = document.querySelector("button.mobile-menu-button");
+      const menu = document.querySelector(".mobile-menu");
+      btn?.addEventListener("click", () => menu?.classList.toggle("hidden"));
+    })();
+
+    // ---- AJAX filter wiring for navbar ----
+    // without breaking non-JS fallback
+    (function(){
+      const links = document.querySelectorAll('a.nb-link[data-category]');
+
+      function currentCategoryFromURL() {
+        const path = (location.pathname || '').toLowerCase();
+        if (path.includes('/apparel/')) return 'apparel';
+        if (path.includes('/accessories/')) return 'accessories';
+        if (path.includes('/shoes/')) return 'shoes';
+        return '';
+      }
+
+      function setNavbarActive(cat) {
+        links.forEach(a => {
+          a.classList.remove('underline','decoration-blue-600','underline-offset-4','font-semibold');
+          if ((a.dataset.category || '') === (cat || '')) {
+            a.classList.add('underline','decoration-blue-600','underline-offset-4','font-semibold');
+          }
+        });
+      }
+
+      function getStateCategory() {
+        // gunakan STATE dari products.js jika ada, jika tidak fallback dari URL
+        return (window.STATE && typeof window.STATE.category !== 'undefined')
+               ? window.STATE.category
+               : currentCategoryFromURL();
+      }
+
+      // intercept click: pakai AJAX jika products.js tersedia
+      links.forEach(a => {
+        a.addEventListener('click', function(e){
+          const hasAjax = typeof window.refreshList === 'function' && window.STATE;
+          if (!hasAjax) return; // fallback ke href normal (no preventDefault)
+
+          e.preventDefault();
+          // set kategori global & refresh
+          window.STATE.category = a.dataset.category || '';
+          // jika filter 'my' sedang aktif, biarkan; tombol di halaman ngatur sendiri
+          if (document.querySelector('.mobile-menu') && !document.querySelector('.mobile-menu').classList.contains('hidden')) {
+            document.querySelector('.mobile-menu').classList.add('hidden');
+          }
+          window.refreshList();
+          setNavbarActive(window.STATE.category);
+        }, { passive: false });
+      });
+
+      // Initial highlight (saat load)
+      document.addEventListener('DOMContentLoaded', function(){
+        setNavbarActive(getStateCategory());
+      });
+
+      // Jika products.js mengubah kategori lewat dropdown/tombol,
+      // kita tetap coba re-highlight setiap 300ms sekali dgn debounce ringan.
+      // (aman & sederhana, tidak wajib)
+      let lastCat = getStateCategory();
+      setInterval(() => {
+        const nowCat = getStateCategory();
+        if (nowCat !== lastCat) {
+          lastCat = nowCat;
+          setNavbarActive(nowCat);
+        }
+      }, 300);
+    })();
   </script>
 </nav>

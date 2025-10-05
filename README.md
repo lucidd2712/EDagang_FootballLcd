@@ -126,3 +126,33 @@ Flexbox dan Grid adalah dua sistem layout modern dengan kegunaan berbeda. Flexbo
 
 (Nomor 5)  Jelaskan bagaimana cara kamu mengimplementasikan checklist di atas secara step-by-step (bukan hanya sekadar mengikuti tutorial)!
 mplementasi checklist saya lakukan bertahap dan terstruktur. Pertama, saya menyiapkan model Product (termasuk opsi kategori agar cocok dengan menu Apparel/Accessories/Shoes) dan membuat ProductForm di forms.py dengan field yang dibutuhkan. Kedua, saya menyelesaikan CRUD: create_product menyimpan product.user = request.user, edit_product dan delete_product membatasi akses menggunakan get_object_or_404(..., user=request.user) agar hanya pemilik yang boleh mengubah/menghapus; semua form dilengkapi {% csrf_token %} untuk keamanan. Ketiga, saya mendesain ulang tampilan dengan tema biru menggunakan Tailwind: halaman login/register dibuat sebagai kartu tengah dengan feedback error yang jelas, halaman create/edit/detail product memakai kartu putih ber-border biru, tombol utama biru, dan fokus field yang konsisten via global.css. Keempat, halaman daftar product saya buat responsif dengan Grid; jika belum ada produk, tampil empty state dengan ilustrasi dan tombol “Add Product”, jika sudah ada, setiap product dirender sebagai card reusable yang memuat gambar (rasio tetap), badge kategori, status stok, harga tebal, dan dua tombol Edit/Delete khusus untuk pemilik. Kelima, saya menambahkan navbar responsif (desktop menu dan hamburger di mobile) serta rute kategori di urls.py sehingga klik menu Apparel/Accessories/Shoes menampilkan daftar yang relevan; show_main siap menerima parameter kategori dan—bila filter diaktifkan—memilah produk berdasarkan field category. Terakhir, saya merapikan semua penamaan di template agar konsisten “product” (menghapus istilah “news”), memastikan tidak ada NoReverseMatch, dan menguji alur lengkap dari login, menambah, mengedit, menghapus, hingga melihat detail product pada berbagai ukuran layar.
+
+
+
+
+
+
+
+# Tugas 6
+(Nomor 1) Apa perbedaan antara synchronous request dan asynchronous request?
+Perbedaan antara synchronous request dan asynchronous request adalah pada cara browser menunggu hasil. Synchronous request membuat browser berhenti sejenak sampai server mengirimkan respons. Seluruh halaman tidak bisa berinteraksi sebelum jawaban datang. Asynchronous request membiarkan browser tetap bisa digunakan sambil menunggu jawaban dari server. Hanya bagian tertentu yang diperbarui ketika respons tiba.
+
+
+
+(Nomor 2) Bagaimana AJAX bekerja di Django (alur request–response)?
+Cara kerja AJAX di Django mengikuti alur request dan response berbasis HTTP. JavaScript di halaman memanggil endpoint Django menggunakan fetch atau XMLHttpRequest dan mengirim data dalam format formulir atau JSON. Django menerima permintaan di view, memproses logika bisnis dan mengembalikan respons JSON atau status kode. JavaScript menerima JSON tersebut lalu memanipulasi DOM untuk memperbarui bagian halaman tanpa memuat ulang seluruh halaman.
+
+
+
+(Nomor 3) Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+Keuntungan menggunakan AJAX dibandingkan render biasa di Django adalah interaksi terasa lebih cepat karena hanya bagian yang relevan yang diperbarui. Beban server dan bandwidth turun karena tidak perlu mengirim ulang seluruh template dan aset setiap aksi kecil. Antarmuka bisa menjadi lebih dinamis karena validasi dan umpan balik dapat diberikan segera setelah pengguna beraksi. Pola ini juga memudahkan pembuatan pengalaman real time seperti refresh daftar data tanpa reload.
+
+
+
+(Nomor 4) Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+Keamanan saat menggunakan AJAX untuk Login dan Register di Django dijaga dengan beberapa lapisan. Pastikan token CSRF dikirim pada setiap permintaan yang memodifikasi data. Gunakan AuthenticationForm atau UserCreationForm agar validasi kredensial dan aturan password tetap berlaku. Lakukan rate limiting atau throttling pada endpoint autentikasi untuk mencegah percobaan login berulang yang berbahaya. Selalu kirim dan terima data melalui HTTPS agar kredensial tidak dapat disadap. Jangan pernah mengandalkan validasi sisi klien saja karena semua keputusan keamanan harus dipastikan kembali di view Django.
+
+
+
+(Nomor 5) Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+Dampak AJAX terhadap pengalaman pengguna adalah halaman terasa responsif dan mulus. Pengguna tidak kehilangan konteks karena tidak terjadi perpindahan halaman penuh. Aksi seperti membuat mengubah dan menghapus data bisa langsung terlihat hasilnya disertai pesan sukses atau galat yang cepat. Waktu tunggu terasa lebih pendek karena ada indikator proses dan hanya elemen yang relevan yang berubah. Secara keseluruhan pengguna merasa aplikasi web bekerja seperti aplikasi desktop yang lincah.

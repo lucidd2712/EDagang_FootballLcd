@@ -1,0 +1,118 @@
+<!-- CREATE/UPDATE MODAL -->
+<div id="productModal" class="hidden fixed inset-0 z-50 w-full h-full bg-black/40 flex items-center justify-center">
+  <div id="productModalCard" class="bg-white rounded-xl w-[92%] max-w-lg shadow-2xl p-0 opacity-0 scale-95 transition">
+    <div class="p-5 border-b">
+      <h3 id="productModalTitle" class="text-xl font-bold text-gray-900">Create Product</h3>
+      <p id="productModalSubtitle" class="text-sm text-gray-500">Fill the form below</p>
+    </div>
+    <form id="productForm" class="p-5 space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="id" id="p_id">
+      <div>
+        <label class="block text-sm font-medium">Name</label>
+        <input class="w-full border rounded-md px-3 py-2" type="text" id="p_name" name="name" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium">Price</label>
+          <input class="w-full border rounded-md px-3 py-2" type="number" step="0.01" id="p_price" name="price" required>
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Stock</label>
+          <input class="w-full border rounded-md px-3 py-2" type="number" id="p_stock" name="stock" required>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Image URL</label>
+        <input class="w-full border rounded-md px-3 py-2" type="url" id="p_image_url" name="image_url">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Category</label>
+        <select class="w-full border rounded-md px-3 py-2" id="p_category" name="category" required>
+          <option value="">Choose</option>
+          <option value="apparel">Apparel</option>
+          <option value="accessories">Accessories</option>
+          <option value="shoes">Shoes</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Description</label>
+        <textarea class="w-full border rounded-md px-3 py-2" id="p_description" name="description" rows="3" required></textarea>
+      </div>
+      <div class="flex flex-col sm:flex-row gap-3 pt-3 border-t">
+        <button type="button" onclick="hideProductModal()" class="px-4 py-2 border rounded-md">Cancel</button>
+        <button id="productSubmitBtn" type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div id="confirmModal" class="hidden fixed inset-0 z-50 w-full h-full bg-black/40 flex items-center justify-center">
+  <div id="confirmCard" class="bg-white rounded-xl w-[92%] max-w-md shadow-2xl p-0 opacity-0 scale-95 transition">
+    <div class="p-5">
+      <h3 class="text-lg font-bold text-gray-900">Delete Product</h3>
+      <p class="text-sm text-gray-600 mt-1">Are you sure you want to delete this product?</p>
+    </div>
+    <div class="flex gap-3 p-5 border-t">
+      <button type="button" onclick="hideConfirm()" class="px-4 py-2 border rounded-md">Cancel</button>
+      <button type="button" id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showProductModal(mode='create', data=null) {
+    const wrap = document.getElementById('productModal');
+    const card = document.getElementById('productModalCard');
+    const title = document.getElementById('productModalTitle');
+    const subtitle = document.getElementById('productModalSubtitle');
+    document.getElementById('productForm').reset();
+
+    if (mode === 'edit' && data) {
+      title.textContent = 'Update Product';
+      subtitle.textContent = 'Edit product information';
+      document.getElementById('p_id').value = data.id;
+      document.getElementById('p_name').value = data.name;
+      document.getElementById('p_price').value = data.price;
+      document.getElementById('p_stock').value = data.stock;
+      document.getElementById('p_image_url').value = data.image_url || '';
+      document.getElementById('p_category').value = data.category || '';
+      document.getElementById('p_description').value = data.description || '';
+      document.getElementById('productSubmitBtn').dataset.mode = 'edit';
+    } else {
+      title.textContent = 'Create Product';
+      subtitle.textContent = 'Fill the form below';
+      document.getElementById('productSubmitBtn').dataset.mode = 'create';
+    }
+
+    wrap.classList.remove('hidden');
+    setTimeout(()=>{ card.classList.remove('opacity-0','scale-95'); card.classList.add('opacity-100','scale-100'); }, 10);
+  }
+  function hideProductModal(){
+    const wrap = document.getElementById('productModal');
+    const card = document.getElementById('productModalCard');
+    card.classList.remove('opacity-100','scale-100'); card.classList.add('opacity-0','scale-95');
+    setTimeout(()=>{ wrap.classList.add('hidden'); }, 150);
+  }
+
+  let _deleteId = null;
+  function showConfirm(id) {
+    _deleteId = id;
+    const wrap = document.getElementById('confirmModal');
+    const card = document.getElementById('confirmCard');
+    wrap.classList.remove('hidden');
+    setTimeout(()=>{ card.classList.remove('opacity-0','scale-95'); card.classList.add('opacity-100','scale-100'); }, 10);
+  }
+  function hideConfirm(){
+    const wrap = document.getElementById('confirmModal');
+    const card = document.getElementById('confirmCard');
+    card.classList.remove('opacity-100','scale-100'); card.classList.add('opacity-0','scale-95');
+    setTimeout(()=>{ wrap.classList.add('hidden'); }, 150);
+  }
+  document.getElementById('confirmDeleteBtn')?.addEventListener('click', async ()=>{
+    if (!_deleteId) return;
+    await window.ProductsAPI.deleteProduct(_deleteId);
+    hideConfirm();
+  });
+</script>

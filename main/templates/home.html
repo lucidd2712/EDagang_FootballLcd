@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block meta %}
+{% if user.is_authenticated %}
+<meta name="user-id" content="{{ user.id }}">
+{% endif %}
+
 <title>Football Products</title>
 {% endblock meta %}
 
@@ -10,78 +14,59 @@
 <div class="bg-blue-50 w-full pt-16 min-h-screen">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- Header Section -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Football Products</h1>
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-1">Latest Football Products</h1>
       <p class="text-gray-600">Discover the newest football gear and accessories</p>
     </div>
 
-    <!-- Filter + Actions -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-blue-100 p-4">
-      <!-- left: filters -->
-      <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?"
-           class="{% if request.GET.filter == 'all' or not request.GET.filter %} bg-blue-600 text-white {% else %} bg-white text-blue-700 border border-blue-300 {% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-600 hover:text-white">
-          All Products
-        </a>
-        <a href="?filter=my"
-           class="{% if request.GET.filter == 'my' %} bg-blue-600 text-white {% else %} bg-white text-blue-700 border border-blue-300 {% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-blue-600 hover:text-white">
-          My Products
-        </a>
-      </div>
-
-      <!-- right: last login + add product -->
-      {% if user.is_authenticated %}
-      <div class="flex items-center gap-3 justify-between sm:justify-end">
-        <span class="text-sm text-gray-500 hidden sm:inline">Last login: {{ last_login }}</span>
-        <a href="{% url 'main:create_product' %}"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span class="hidden sm:inline">Add Product</span>
-          <span class="sm:hidden">Add</span>
-        </a>
-      </div>
-      {% endif %}
-    </div>
-
-    <!-- Products -->
-    {% if not products %}
-      <div class="bg-white rounded-lg border border-blue-100 p-12 text-center">
-        <div class="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-inset ring-blue-200">
-          <img src="{% static 'image/no-products.svg' %}" alt="No products" class="h-16 w-16" />
+    <!-- Toolbar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 bg-white rounded-lg border border-blue-100 p-4">
+      <div class="flex gap-2">
+        <button id="btn-all" class="px-4 py-2 rounded-md font-medium bg-blue-600 text-white">All Products</button>
+        <button id="btn-my" class="px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition">My Products</button>
+        <div class="relative">
+          <select id="categoryFilter" class="px-3 py-2 rounded-md border border-blue-300 text-blue-700 bg-white">
+            <option value="">All Category</option>
+            <option value="apparel">Apparel</option>
+            <option value="accessories">Accessories</option>
+            <option value="shoes">Shoes</option>
+          </select>
         </div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
-        <p class="text-gray-500 mb-6">Be the first to add your product.</p>
+      </div>
+      <div class="flex gap-2 mt-3 sm:mt-0">
+        <button id="btn-refresh" class="px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition">Refresh</button>
         {% if user.is_authenticated %}
-        <a href="{% url 'main:create_product' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          Add Product
-        </a>
-        {% else %}
-        <a href="{% url 'main:login' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-          Sign in to add
-        </a>
+        <button id="btn-create" class="px-4 py-2 rounded-md font-medium bg-blue-600 text-white">Create Product</button>
         {% endif %}
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in products %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
-  </div>
+    </div>
 
-  <!-- FAB (mobile only) -->
-  {% if user.is_authenticated %}
-  <a href="{% url 'main:create_product' %}"
-     class="fixed sm:hidden bottom-6 right-6 p-4 rounded-full shadow-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-     aria-label="Add Product">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </a>
-  {% endif %}
+    <!-- Loading -->
+    <div id="loading" class="bg-white rounded-lg border border-blue-100 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-blue-600 inline-block" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-2">Loading products...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="hidden bg-white rounded-lg border border-red-200 p-6">
+      <p class="text-red-700 font-medium">Failed to load products. Please try again.</p>
+    </div>
+
+    <!-- Empty -->
+    <div id="empty" class="hidden bg-white rounded-lg border border-blue-100 p-12 text-center">
+      <div class="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-inset ring-blue-200">
+        <img src="{% static 'image/no-products.svg' %}" alt="No products" class="h-16 w-16"/>
+      </div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+      <p class="text-gray-500">Be the first to add your product.</p>
+    </div>
+
+    <!-- Grid -->
+    <div id="grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
 </div>
 {% endblock content %}

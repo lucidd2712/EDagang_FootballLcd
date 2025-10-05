@@ -12,28 +12,38 @@ import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.forms.models import model_to_dict
+from django.contrib.auth.models import User
+from django.middleware.csrf import get_token
+
+
+
+
 @login_required(login_url='/login')
 def show_main(request, category=None):
     filter_type = request.GET.get("filter", "all")
     category = category or request.GET.get("category")
 
-    if filter_type == "all":
-        products = Product.objects.all()
-    else:
-        products = Product.objects.filter(user=request.user)
+    products = Product.objects.all()
+    if filter_type == "my":
+        products = products.filter(user=request.user)
 
-    # (opsional) aktifkan filter kategori kalau sudah siap
-    # if category in ["apparel", "accessories", "shoes"]:
-    #     products = products.filter(category=category)
+    # <= ini penting!
+    if category in dict(Product.CATEGORY_CHOICES):
+        products = products.filter(category=category)
 
     context = {
-        'npm': '2406399655',
-        'name': request.user.username,
-        'class': 'PBP C',
-        'products': products,
-        'last_login': request.COOKIES.get('last_login', 'Never'),
-        'filter_type': filter_type,
-        'active_category': category,
+        "npm": "2406399655",
+        "name": request.user.username,
+        "class": "PBP C",
+        "products": products,
+        "last_login": request.COOKIES.get("last_login", "Never"),
+        "filter_type": filter_type,
+        "active_category": category,   # dipakai untuk highlight navbar
     }
     return render(request, "home.html", context)
 
@@ -132,3 +142,100 @@ def delete_product(request, id):
     product = get_object_or_404(Product, pk=id, user=request.user)  
     product.delete()
     return HttpResponseRedirect(reverse('main:show_main'))
+
+
+def product_to_dict(p: Product):
+    d = model_to_dict(p, fields=['id','name','price','stock','description','image_url','category'])
+    d['created_at'] = p.created_at.isoformat() if p.created_at else None
+    d['user_id'] = p.user_id
+    d['user_username'] = p.user.username if p.user_id else None
+    return d
+
+@login_required(login_url='/login')
+@require_http_methods(["GET"])
+def api_products_list(request):
+    """
+    Query params:
+      - filter=all|my  (default: all)
+      - category=apparel|accessories|shoes (opsional)
+    """
+    flt = request.GET.get('filter', 'all')
+    cat = request.GET.get('category')
+    qs = Product.objects.all().order_by('-created_at')
+    if flt == 'my':
+        qs = qs.filter(user=request.user)
+    if cat in dict(Product.CATEGORY_CHOICES):
+        qs = qs.filter(category=cat)
+    data = [product_to_dict(p) for p in qs]
+    return JsonResponse({"results": data}, status=200)
+
+@login_required(login_url='/login')
+@require_http_methods(["GET"])
+def api_product_detail(request, id):
+    p = get_object_or_404(Product, pk=id)
+    return JsonResponse(product_to_dict(p), status=200)
+
+@login_required(login_url='/login')
+@require_http_methods(["POST"])
+def api_product_create(request):
+    form = ProductForm(request.POST)
+    if form.is_valid():
+        obj = form.save(commit=False)
+        obj.user = request.user
+        obj.save()
+        return JsonResponse({"message":"CREATED","product":product_to_dict(obj)}, status=201)
+    return JsonResponse({"message":"VALIDATION_ERROR","errors":form.errors}, status=400)
+
+@login_required(login_url='/login')
+@require_http_methods(["POST","PUT","PATCH"])
+def api_product_update(request, id):
+    obj = get_object_or_404(Product, pk=id, user=request.user)
+    data = request.POST or request.PUT if hasattr(request, "PUT") else request.POST
+    form = ProductForm(data, instance=obj)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"message":"UPDATED","product":product_to_dict(obj)}, status=200)
+    return JsonResponse({"message":"VALIDATION_ERROR","errors":form.errors}, status=400)
+
+@login_required(login_url='/login')
+@require_http_methods(["POST","DELETE"])
+def api_product_delete(request, id):
+    obj = get_object_or_404(Product, pk=id, user=request.user)
+    obj.delete()
+    return JsonResponse({"message":"DELETED"}, status=200)
+
+# -------- AUTH via AJAX --------
+
+@require_http_methods(["GET"])
+def api_get_csrf(request):
+    # opsional jika ingin fetch CSRF via JS
+    return JsonResponse({"csrftoken": get_token(request)})
+
+@require_http_methods(["POST"])
+def api_register(request):
+    # Mengembalikan JSON (bukan redirect)
+    form = UserCreationForm(request.POST or None)
+    if form.is_valid():
+        user = form.save()
+        return JsonResponse({"message":"REGISTERED","username":user.username}, status=201)
+    return JsonResponse({"message":"VALIDATION_ERROR","errors":form.errors}, status=400)
+
+@require_http_methods(["POST"])
+def api_login(request):
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        response = JsonResponse({"message":"LOGGED_IN","username":user.username}, status=200)
+        response.set_cookie('last_login', str(datetime.datetime.now()))
+        return response
+    return JsonResponse({"message":"INVALID_CREDENTIALS"}, status=401)
+
+@login_required(login_url='/login')
+@require_http_methods(["POST"])
+def api_logout(request):
+    logout(request)
+    response = JsonResponse({"message":"LOGGED_OUT"}, status=200)
+    response.delete_cookie('last_login')
+    return response
