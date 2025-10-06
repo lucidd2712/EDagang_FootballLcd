@@ -1,33 +1,45 @@
-function showToast(title, message, type = 'normal', duration = 2500) {
+// toast.js
+(function () {
   const el = document.getElementById('toast-component');
-  const t = document.getElementById('toast-title');
-  const m = document.getElementById('toast-message');
-  if (!el) return;
+  const titleEl = document.getElementById('toast-title');
+  const msgEl = document.getElementById('toast-message');
+  const iconEl = document.getElementById('toast-icon');
 
-  el.classList.remove('bg-green-50','border-green-500','text-green-700',
-                      'bg-red-50','border-red-500','text-red-700',
-                      'bg-white','border-gray-200','text-gray-800');
+  const TYPE_STYLE = {
+    success: { cls: ['bg-green-50','border-green-500','text-green-700'], icon: '✅' },
+    error:   { cls: ['bg-red-50','border-red-500','text-red-700'],       icon: '⚠️' },
+    normal:  { cls: ['bg-white','border-gray-200','text-gray-800'],      icon: '🔔' },
+    info:    { cls: ['bg-blue-50','border-blue-500','text-blue-700'],    icon: 'ℹ️' },
+  };
 
-  if (type === 'success') {
-    el.classList.add('bg-green-50','border-green-500','text-green-700');
-    el.style.borderColor = '#22c55e';
-  } else if (type === 'error') {
-    el.classList.add('bg-red-50','border-red-500','text-red-700');
-    el.style.borderColor = '#ef4444';
-  } else {
-    el.classList.add('bg-white','border-gray-200','text-gray-800');
-    el.style.borderColor = '#e5e7eb';
+  function resetClass() {
+    el.classList.remove(
+      'bg-green-50','border-green-500','text-green-700',
+      'bg-red-50','border-red-500','text-red-700',
+      'bg-white','border-gray-200','text-gray-800',
+      'bg-blue-50','border-blue-500','text-blue-700',
+      'opacity-100','translate-y-0'
+    );
   }
 
-  t.textContent = title || '';
-  m.textContent = message || '';
+  window.showToast = function showToast(title, message, type = 'normal', duration = 2800) {
+    if (!el) return;
+    const cfg = TYPE_STYLE[type] || TYPE_STYLE.normal;
 
-  el.classList.remove('opacity-0','translate-y-8');
-  el.classList.add('opacity-100','translate-y-0');
+    resetClass();
+    el.classList.add(...cfg.cls);
+    iconEl.textContent = cfg.icon;
+    titleEl.textContent = title || '';
+    msgEl.textContent = message || '';
 
-  clearTimeout(el._hideTimer);
-  el._hideTimer = setTimeout(() => {
-    el.classList.remove('opacity-100','translate-y-0');
-    el.classList.add('opacity-0','translate-y-8');
-  }, duration);
-}
+    // show
+    el.classList.remove('opacity-0','translate-y-8');
+    el.classList.add('opacity-100','translate-y-0');
+
+    clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => {
+      el.classList.remove('opacity-100','translate-y-0');
+      el.classList.add('opacity-0','translate-y-8');
+    }, duration);
+  };
+})();
