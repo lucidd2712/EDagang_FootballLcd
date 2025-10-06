@@ -107,7 +107,6 @@
     })();
 
     // ---- AJAX filter wiring for navbar ----
-    // without breaking non-JS fallback
     (function(){
       const links = document.querySelectorAll('a.nb-link[data-category]');
 
@@ -129,38 +128,29 @@
       }
 
       function getStateCategory() {
-        // gunakan STATE dari products.js jika ada, jika tidak fallback dari URL
         return (window.STATE && typeof window.STATE.category !== 'undefined')
                ? window.STATE.category
                : currentCategoryFromURL();
       }
 
-      // intercept click: pakai AJAX jika products.js tersedia
       links.forEach(a => {
         a.addEventListener('click', function(e){
           const hasAjax = typeof window.refreshList === 'function' && window.STATE;
-          if (!hasAjax) return; // fallback ke href normal (no preventDefault)
+          if (!hasAjax) return; // fallback ke href normal
 
           e.preventDefault();
-          // set kategori global & refresh
           window.STATE.category = a.dataset.category || '';
-          // jika filter 'my' sedang aktif, biarkan; tombol di halaman ngatur sendiri
-          if (document.querySelector('.mobile-menu') && !document.querySelector('.mobile-menu').classList.contains('hidden')) {
-            document.querySelector('.mobile-menu').classList.add('hidden');
-          }
+          const mm = document.querySelector('.mobile-menu');
+          if (mm && !mm.classList.contains('hidden')) mm.classList.add('hidden');
           window.refreshList();
           setNavbarActive(window.STATE.category);
         }, { passive: false });
       });
 
-      // Initial highlight (saat load)
       document.addEventListener('DOMContentLoaded', function(){
         setNavbarActive(getStateCategory());
       });
 
-      // Jika products.js mengubah kategori lewat dropdown/tombol,
-      // kita tetap coba re-highlight setiap 300ms sekali dgn debounce ringan.
-      // (aman & sederhana, tidak wajib)
       let lastCat = getStateCategory();
       setInterval(() => {
         const nowCat = getStateCategory();

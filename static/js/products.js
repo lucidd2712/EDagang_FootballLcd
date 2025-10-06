@@ -1,6 +1,4 @@
-/* static/js/products.js
- * Versi DOMPurify (sanitize teks user) + CRUD AJAX + navbar filter
- */
+/* static/js/products.js — AJAX cards + stretched-link (fixed z-index) */
 
 /* ---------------- CSRF helper ---------------- */
 function getCookie(name) {
@@ -11,24 +9,17 @@ function getCookie(name) {
 }
 const CSRF_TOKEN = getCookie("csrftoken");
 
-/* -------------- Sanitize helpers (DOMPurify) -------------- */
-/** Sanitize sebagai teks murni (tanpa tag/attr). */
+/* -------------- Sanitize helpers -------------- */
 function cleanText(s) {
   return DOMPurify.sanitize(String(s ?? ""), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 }
-/** Validasi URL gambar agar tidak bisa "javascript:". Kosongkan jika tidak valid. */
-// Sebelumnya kita pakai new URL() dan membatasi hanya http/https.
-// Beberapa URL kamu (dengan query panjang, redirect, dsb.) jadi gugur.
-// Versi ini hanya memblok skema berbahaya (javascript:) dan membiarkan sisanya.
 function safeImgUrl(url) {
   const raw = String(url ?? "").trim();
   const sanitized = DOMPurify.sanitize(raw, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
   const lower = sanitized.toLowerCase();
   if (lower.startsWith("javascript:")) return "";
-  // izinkan http, https, relative path, dan protocol-relative (//)
-  return sanitized;
+  return sanitized; // allow http/https/relative
 }
-
 
 /* ---------------- DOM refs ---------------- */
 const loadingEl = document.getElementById("loading");
@@ -42,12 +33,8 @@ const btnRefresh = document.getElementById("btn-refresh");
 const btnCreate = document.getElementById("btn-create");
 const categoryFilter = document.getElementById("categoryFilter");
 
-/* -------- global STATE (diekspos ke window) -------- */
-let STATE = {
-  filter: "all", // 'all' | 'my'
-  category: "",  // '', 'apparel', 'accessories', 'shoes'
-  items: [],
-};
+/* -------- global STATE -------- */
+let STATE = { filter: "all", category: "", items: [] };
 window.STATE = STATE;
 
 /* ---------------- API Layer ---------------- */
@@ -56,44 +43,31 @@ const ProductsAPI = {
     const params = new URLSearchParams();
     if (filter) params.set("filter", filter);
     if (category) params.set("category", category);
-    const res = await fetch(`/api/products/?${params.toString()}`, {
-      headers: { Accept: "application/json" },
-    });
+    const res = await fetch(`/api/products/?${params.toString()}`, { headers: { Accept: "application/json" } });
     if (!res.ok) throw new Error("LIST_FAILED");
     const data = await res.json();
     return data.results || [];
   },
   async create(formData) {
-    const res = await fetch("/api/products/create/", {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF_TOKEN },
-      body: formData,
-    });
+    const res = await fetch("/api/products/create/", { method: "POST", headers: { "X-CSRFToken": CSRF_TOKEN }, body: formData });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw { code: "CREATE_FAILED", data };
     return data.product;
   },
   async update(id, formData) {
-    const res = await fetch(`/api/products/${id}/update/`, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF_TOKEN },
-      body: formData,
-    });
+    const res = await fetch(`/api/products/${id}/update/`, { method: "POST", headers: { "X-CSRFToken": CSRF_TOKEN }, body: formData });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw { code: "UPDATE_FAILED", data };
     return data.product;
   },
   async deleteProduct(id) {
-    const res = await fetch(`/api/products/${id}/delete/`, {
-      method: "POST",
-      headers: { "X-CSRFToken": CSRF_TOKEN },
-    });
+    const res = await fetch(`/api/products/${id}/delete/`, { method: "POST", headers: { "X-CSRFToken": CSRF_TOKEN } });
     if (!res.ok) throw new Error("DELETE_FAILED");
     showToast("Deleted", "Product has been removed", "success");
     await refreshList();
   },
 };
-window.ProductsAPI = ProductsAPI; // dipakai modal konfirmasi delete
+window.ProductsAPI = ProductsAPI;
 
 /* -------------- UI helpers -------------- */
 function showSection({ loading = false, error = false, empty = false, grid = false }) {
@@ -106,16 +80,14 @@ function setFilterButtons() {
   if (!btnAll || !btnMy) return;
   if (STATE.filter === "all") {
     btnAll.className = "px-4 py-2 rounded-md font-medium bg-blue-600 text-white";
-    btnMy.className =
-      "px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition";
+    btnMy.className = "px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition";
   } else {
     btnMy.className = "px-4 py-2 rounded-md font-medium bg-blue-600 text-white";
-    btnAll.className =
-      "px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition";
+    btnAll.className = "px-4 py-2 rounded-md font-medium border border-blue-300 text-blue-700 hover:bg-blue-600 hover:text-white transition";
   }
 }
 
-/* -------------- Navbar wiring (kategori via AJAX) -------------- */
+/* -------------- Navbar wiring (AJAX kategori) -------------- */
 function setNavbarActive() {
   const links = document.querySelectorAll('a.nb-link[data-category]');
   links.forEach((a) => {
@@ -128,25 +100,21 @@ function setNavbarActive() {
 function wireNavbarLinks() {
   const links = document.querySelectorAll('a.nb-link[data-category]');
   links.forEach((a) => {
-    a.addEventListener(
-      "click",
-      (e) => {
-        e.preventDefault(); // AJAX filter, fallback aman bila JS mati
-        STATE.category = a.dataset.category || "";
-        document.querySelector(".mobile-menu")?.classList.add("hidden");
-        refreshList();
-        setNavbarActive();
-      },
-      { passive: false }
-    );
+    a.addEventListener("click", (e) => {
+      e.preventDefault(); // hanya untuk navbar
+      STATE.category = a.dataset.category || "";
+      document.querySelector(".mobile-menu")?.classList.add("hidden");
+      refreshList();
+      setNavbarActive();
+    }, { passive: false });
   });
 }
 
-/* -------------- Build card (DOMPurify di semua teks user) -------------- */
+/* -------------- Card builder (stretched-link di ATAS konten) -------------- */
 function buildCard(item) {
-  const id = item.id;
+  const id = Number(item.id);
+  const detailUrl = `/product/${id}/`;
 
-  // Sanitize nilai dari user
   const name = cleanText(item.name);
   const desc = cleanText(item.description);
   const category = cleanText(item.category);
@@ -159,11 +127,14 @@ function buildCard(item) {
   const createdAt = item.created_at ? new Date(item.created_at) : null;
 
   const wrapper = document.createElement("article");
-  wrapper.className =
-    "bg-white rounded-xl border border-blue-100 hover:shadow-xl hover:border-blue-300 transition overflow-hidden flex flex-col";
+  // relative agar anchor absolut bisa cover seluruh kartu
+  wrapper.className = "relative bg-white rounded-xl border border-blue-100 hover:shadow-xl hover:border-blue-300 transition overflow-hidden flex flex-col";
 
   wrapper.innerHTML = `
-    <div class="aspect-[4/3] relative overflow-hidden">
+    <!-- stretched link di paling atas -->
+    <a href="${detailUrl}" class="absolute inset-0 z-30" aria-label="Open ${name}" data-link="stretched"></a>
+
+    <div class="aspect-[4/3] relative overflow-hidden z-20">
       ${img
         ? `<img src="${img}" alt="${name}" class="w-full h-full object-cover">`
         : `<div class="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center"><span class="text-5xl">⚽</span></div>`}
@@ -178,48 +149,52 @@ function buildCard(item) {
       </div>
     </div>
 
-    <div class="p-5 flex-1 flex flex-col">
+    <div class="p-5 flex-1 flex flex-col z-20">
       <div class="flex items-center text-sm text-gray-500 mb-2">
         <time>${createdAt ? createdAt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : ""}</time>
         <span class="mx-2">•</span>
         <span>Stok ${stockNum}</span>
       </div>
 
-      <h3 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">${name}</h3>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2 leading-tight">
+        <a href="${detailUrl}" class="relative z-40 hover:text-blue-600 transition-colors">${name}</a>
+      </h3>
 
       <div class="flex items-baseline justify-between">
         <p class="text-xl font-extrabold text-blue-600">Rp ${price}</p>
+        <a href="${detailUrl}" class="relative z-40 text-sm font-medium text-blue-600 hover:text-blue-700">View →</a>
       </div>
 
       <p class="text-gray-600 text-sm leading-relaxed mt-3 line-clamp-3">${desc}</p>
 
       ${(window.USER_ID && Number(window.USER_ID) === Number(item.user_id)) ? `
-      <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 mt-4">
+      <div class="flex items-center justify-end gap-4 pt-4 border-t border-gray-100 mt-4 relative z-40">
         <button class="text-gray-600 hover:text-gray-800 text-sm" data-action="edit">Edit</button>
         <button class="text-red-600 hover:text-red-700 text-sm" data-action="delete">Delete</button>
       </div>` : ``}
     </div>
   `;
 
-  // Fallback jika gambar gagal dimuat → ganti dengan placeholder biru yang lama
-    const imgEl = wrapper.querySelector("img");
-    if (imgEl) {
+  // Fallback gambar gagal → placeholder
+  const imgEl = wrapper.querySelector("img");
+  if (imgEl) {
     imgEl.addEventListener("error", () => {
-        const ph = document.createElement("div");
-        ph.className = "w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center";
-        ph.innerHTML = '<span class="text-5xl">⚽</span>';
-        // replace <img> dengan placeholder
-        const parent = imgEl.parentElement;
-        if (parent) parent.replaceChild(ph, imgEl);
+      const ph = document.createElement("div");
+      ph.className = "w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center";
+      ph.innerHTML = '<span class="text-5xl">⚽</span>';
+      imgEl.parentElement?.replaceChild(ph, imgEl);
     }, { once: true });
-    }
+  }
 
-
-  // action bindings
-  wrapper.querySelector('[data-action="edit"]')?.addEventListener("click", () => {
+  /* Penting: cegah anchor overlay menangkap klik tombol aksi */
+  wrapper.querySelector('[data-action="edit"]')?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
     showProductModal("edit", item);
   });
-  wrapper.querySelector('[data-action="delete"]')?.addEventListener("click", () => {
+  wrapper.querySelector('[data-action="delete"]')?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
     showConfirm(id);
   });
 
@@ -255,31 +230,16 @@ async function refreshList() {
 window.refreshList = refreshList;
 
 /* -------------- Events -------------- */
-btnAll?.addEventListener("click", () => {
-  STATE.filter = "all";
-  refreshList();
-});
-btnMy?.addEventListener("click", () => {
-  STATE.filter = "my";
-  refreshList();
-});
-btnRefresh?.addEventListener("click", () => {
-  refreshList();
-  showToast("Refreshed", "Latest product list loaded", "normal");
-});
-categoryFilter?.addEventListener("change", (e) => {
-  STATE.category = e.target.value || "";
-  refreshList();
-});
+btnAll?.addEventListener("click", () => { STATE.filter = "all"; refreshList(); });
+btnMy?.addEventListener("click", () => { STATE.filter = "my"; refreshList(); });
+btnRefresh?.addEventListener("click", () => { refreshList(); showToast("Refreshed", "Latest product list loaded", "normal"); });
+categoryFilter?.addEventListener("change", (e) => { STATE.category = e.target.value || ""; refreshList(); });
 btnCreate?.addEventListener("click", () => showProductModal("create"));
 
-// handle form submit (create/update) — form ada di modal_product.html
 document.getElementById("productForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const submitBtn = document.getElementById("productSubmitBtn");
-  const mode = submitBtn?.dataset.mode || "create";
+  const mode = document.getElementById("productSubmitBtn")?.dataset.mode || "create";
   const fd = new FormData(e.target);
-
   try {
     if (mode === "edit" && fd.get("id")) {
       await ProductsAPI.update(fd.get("id"), fd);
@@ -300,6 +260,7 @@ document.getElementById("productForm")?.addEventListener("submit", async (e) => 
 (function bootstrapUser() {
   const el = document.querySelector('meta[name="user-id"]');
   if (el) window.USER_ID = el.content;
+  console.log("products.js (stretched-link fix) loaded — USER_ID:", window.USER_ID ?? "(anon)");
 })();
 
 document.addEventListener("DOMContentLoaded", () => {
