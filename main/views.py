@@ -21,6 +21,16 @@ from django.contrib.auth.models import User
 from django.middleware.csrf import get_token
 
 
+#flutter
+import json
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from .models import Product
+
+
+
 
 
 @login_required(login_url='/login')
@@ -239,3 +249,59 @@ def api_logout(request):
     response = JsonResponse({"message":"LOGGED_OUT"}, status=200)
     response.delete_cookie('last_login')
     return response
+
+
+#flutter
+@csrf_exempt  # biar enak dulu, nanti boleh diamankan lagi
+def create_product_flutter(request):
+    if request.method != "POST":
+        return JsonResponse(
+            {"status": "error", "message": "Invalid method"},
+            status=405,
+        )
+
+    if not request.user.is_authenticated:
+        return JsonResponse(
+            {"status": "error", "message": "Unauthorized"},
+            status=401,
+        )
+
+    try:
+        data = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse(
+            {"status": "error", "message": "Invalid JSON"},
+            status=400,
+        )
+
+    name = data.get("name", "").strip()
+    price = data.get("price", 0)
+    description = data.get("description", "").strip()
+    image_url = data.get("image_url", "").strip()  # <— samakan dengan Flutter
+    category = data.get("category", "").strip()
+    is_featured = data.get("is_featured", False)
+
+    if not name or not description or not category:
+        return JsonResponse(
+            {"status": "error", "message": "Field wajib masih kosong."},
+            status=400,
+        )
+
+    product = Product.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        name=name,
+        price=price,
+        stock=0,  # sementara 0, nanti bisa ditambah form stock
+        description=description,
+        image_url=image_url,
+        category=category,
+        # kalau model kamu ada field lain, isi di sini
+    )
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": "Produk berhasil dibuat.",
+            "id": product.pk,
+        }
+    )
